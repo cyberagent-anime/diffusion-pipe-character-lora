@@ -376,6 +376,7 @@ class WanPipeline(BasePipeline):
         self.offloader = ModelOffloader('dummy', [], 0, 0, True, torch.device('cuda'), False, debug=False)
         ckpt_dir = self.model_config['ckpt_path']
         dtype = self.model_config['dtype']
+        self.skip_frame_condition = self.model_config.get('skip_frame_condition',False)
 
         self.original_model_config_path = os.path.join(ckpt_dir, 'config.json')
         with open(self.original_model_config_path) as f:
@@ -510,6 +511,9 @@ class WanPipeline(BasePipeline):
                     # NOTE: dim=1 is a hack to pass clip_context without microbatching breaking the zeroth dim
                     clip_context = torch.cat([clip_context, self.clip.visual(last_frame.to(p.device, p.dtype))], dim=1)
                     tensor[:, :, :-2, ...] = 0
+
+                if self.skip_frame_condition:
+                    tensor[:,:,:,...] = 0
 
                 # Image conditioning. Same shame as latents, first frame is unchanged, rest is 0.
                 # NOTE: encoding 0s with the VAE doesn't give you 0s in the latents, I tested this. So we need to
@@ -659,6 +663,8 @@ class InitialLayer(nn.Module):
             mask[:, :, 0, ...] = 1
             if self.flf2v:
                 mask[:, :, -1, ...] = 1
+            if self.skip_frame_condition:
+                mask[:,:,:,...] = 0
             y = torch.cat([mask, y], dim=1)
             x = [torch.cat([u, v], dim=0) for u, v in zip(x, y)]
 
