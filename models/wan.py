@@ -454,7 +454,7 @@ class WanPipeline(BasePipeline):
             for name, p in self.transformer.named_parameters():
                 if not (any(x in name for x in KEEP_IN_HIGH_PRECISION)):
                     p.data = p.data.to(transformer_dtype)
-
+        self.transformer.skip_frame_condition = self.skip_frame_condition
         self.transformer.train()
         # We'll need the original parameter name for saving, and the name changes once we wrap modules for pipeline parallelism,
         # so store it in an attribute here. Same thing below if we're training a lora and creating lora weights.
@@ -633,6 +633,7 @@ class InitialLayer(nn.Module):
         self.time_embedding = model.time_embedding
         self.text_embedding = model.text_embedding
         self.time_projection = model.time_projection
+        self.skip_frame_condition = model.skip_frame_condition
         self.i2v = (model.model_type == 'i2v')
         self.flf2v = (model.model_type == 'flf2v')
         if self.i2v or self.flf2v:
