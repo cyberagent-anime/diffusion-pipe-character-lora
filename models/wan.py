@@ -664,7 +664,7 @@ class InitialLayer(nn.Module):
             mask = torch.zeros((bs, 4, f, h, w), device=x.device, dtype=x.dtype)
             mask[:, :, 0, ...] = 1
             if self.flf2v:
-                mask[:, :, -1, ...] = 1
+                mask[:, 3, -1, ...] = 1
             if self.skip_frame_condition:
                 mask[:,:,:,...] = 0
             y = torch.cat([mask, y], dim=1)
