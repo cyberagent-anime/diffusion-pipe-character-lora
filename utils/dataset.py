@@ -21,7 +21,7 @@ from utils.common import is_main_process, VIDEO_EXTENSIONS, round_to_nearest_mul
 
 
 DEBUG = False
-IMAGE_SIZE_ROUND_TO_MULTIPLE = 32
+IMAGE_SIZE_ROUND_TO_MULTIPLE = 16
 NUM_PROC = min(8, os.cpu_count())
 
 
